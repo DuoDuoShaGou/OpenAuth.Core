@@ -34,6 +34,8 @@ namespace OpenAuth.Mvc.Controllers
              _targetFilePath = _hostingEnvironment.WebRootPath;
             _dbHelper = new DbHelper(configuration);
         }
+
+        #region 订单录入
         public IActionResult Index()
         {
             return View();
@@ -420,6 +422,15 @@ namespace OpenAuth.Mvc.Controllers
 
             return new EmptyResult();
         }
+        #endregion
 
+        #region 生产制造
+        public IActionResult ProductIndex()
+        {
+            return View();
+        }
+
+
+        #endregion
     }
 }
