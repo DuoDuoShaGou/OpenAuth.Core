@@ -75,15 +75,6 @@
     laydate.render(end);
     laydate.render(start1);
     laydate.render(end1);
-    laydate.render({
-        elem: "#PO_Date",
-        trigger: "click"
-    });
-    var vm;
-    var data = {
-        Id: ''
-    };
-
     upload.render({
         elem: '#btnImport'
         , url: '/Order/ImportOrderList'
@@ -102,6 +93,16 @@
         }
     })
 
+    laydate.render({
+        elem: "#PO_Date",
+        trigger: "click"
+    });
+
+    laydate.render({
+        elem: "#Required_Shipping_Date",
+        trigger: "click"
+    });
+
     var orderList = function () {
         $.getJSON('/Order/GetOrderList',
             {
@@ -118,7 +119,7 @@
                     cols: [[
                         { type: 'checkbox' }
                         , { field: 'PO_NO', width: 100, title: 'PO NO' }
-                        , { field: 'ITEM', width: 100, title: 'ITEM', hide: true }
+                        , { field: 'ITEM', width: 80, title: 'ITEM', hide: true }
                         , { field: 'Customer', width: 100, title: 'Customer' }
                         , { field: 'Buyer', width: 80, title: 'Buyer' }
                         , { field: 'PO_Date', width: 120, title: 'PO Date' }
@@ -145,7 +146,7 @@
                         , { field: 'Delivery_Point', width: 120, title: 'Delivery Point' }
                         , {
                             field: 'Status', width: 60, title: 'Status', templet: function (row) {
-                                switch (row.Status) {
+                                switch (parseInt(row.Status)) {
                                     case 0:
                                         return "已录入";
                                     case 1:
@@ -169,13 +170,13 @@
     orderList();
 
     var editDlg = function () {
-
+        var vm;
         var update = false;  //是否为更新
         var show = function (data) {
             var title = update ? "编辑信息" : "添加";
             layer.open({
                 title: title,
-                area: ["700px", "580px"],
+                area: ["660px", "580px"],
                 type: 1,
                 content: $('#divOrderEdit'),
                 success: function () {
@@ -213,10 +214,9 @@
                 function (data) {
                     $.post(url,
                         data.field,
-                        function (data) {
-                            layer.msg(data.msg);
-                        },
-                        "json");
+                        function (resp) {
+                            layer.msg(JSON.parse(resp).msg);
+                        },"json");
                     return false;
                 });
         }
@@ -258,13 +258,15 @@
         }
         , btnDel: function () {
             var checkStatus = table.checkStatus('orderList'), data = checkStatus.data;
+            var json = JSON.stringify(data);
             $.ajax({
                 url: '/Order/DeleteOrder',
-                type: 'GET',
+                type: 'POST',
                 dataType: 'json',
-                data: data[0],
+                data: { AllData: json },
                 success: function (resp) {
-                    layer.msg(resp.msg);
+                    layer.msg(JSON.parse(resp).msg);
+                    orderList();
                 },
                 error: function (xhr) {
                 }
@@ -289,6 +291,5 @@
             form.submit();
         }
     };
-
 
 })

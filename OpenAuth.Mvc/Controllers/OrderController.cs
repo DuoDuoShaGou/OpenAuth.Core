@@ -10,13 +10,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using NPOI.HSSF.UserModel;
-using NPOI.HSSF.Util;
 using NPOI.SS.UserModel;
-using NPOI.SS.Util;
 using NPOI.XSSF.UserModel;
 using OpenAuth.App.Interface;
 using OpenAuth.Mvc.Models;
 using System.Text;
+using Newtonsoft.Json;
 
 namespace OpenAuth.Mvc.Controllers
 {
@@ -89,9 +88,8 @@ namespace OpenAuth.Mvc.Controllers
 
         public IActionResult AddOrder(OrderView order)
         {
-            string sql = $" SELET ITM FROM XY_POS WHERE PO_NO = '{ order.PO_NO }';";
+            string sql = $"SELECT ITEM FROM XY_POS WHERE PO_NO = '{ order.PO_NO }';";
             var item = _dbHelper.ExecuteScalar(sql);
-
             if (item != null)
             {
                 int.TryParse(item.ToString(), out int itm);
@@ -135,14 +133,21 @@ namespace OpenAuth.Mvc.Controllers
             return Json(new { code = 0, msg = "操作失败！", data = new { src = "" } }.ToJson());
         }
 
-        public IActionResult DeleteOrder(OrderView order)
+        [HttpPost]
+        public IActionResult DeleteOrder(string AllData)
         {
-            if(!string.IsNullOrEmpty(order.PO_NO)&&!string.IsNullOrEmpty(order.ITEM))
+            int result = 0;
+            List<OrderView> list = JsonConvert.DeserializeObject<List<OrderView>>(AllData);
+            foreach (var order in list)
             {
-                string str = "DELETE  FROM [XY_POS] WHERE PO_NO='" + order.PO_NO + "' AND ITEM = " + order.ITEM;
-                if (_dbHelper.ExecuteNonQuery(str) > 0)
-                    return Json(new { code = 0, msg = "删除成功！", data = new { src = "" } }.ToJson());
+                if (!string.IsNullOrEmpty(order.PO_NO) && !string.IsNullOrEmpty(order.ITEM))
+                {
+                    string str = "DELETE  FROM [XY_POS] WHERE PO_NO='" + order.PO_NO + "' AND ITEM = " + order.ITEM;
+                    result+=_dbHelper.ExecuteNonQuery(str);
+                }
             }
+            if (result > 0)
+                return Json(new { code = 0, msg = $"共删除{result}条数据！", data = new { src = "" } }.ToJson());
             return Json(new { code = 0, msg = "删除失败！", data = new { src = "" } }.ToJson());
         }
 
@@ -373,7 +378,6 @@ namespace OpenAuth.Mvc.Controllers
 
             var dt = _dbHelper.QueryTable(sql);
 
-
             IWorkbook workbook = new XSSFWorkbook();
 
             var sheet = workbook.CreateSheet("Sheet");
@@ -383,7 +387,6 @@ namespace OpenAuth.Mvc.Controllers
             for (var i = 0; i < dt.Columns.Count; i++)
             {
                 var cell = row.CreateCell(i);
-                //列名称,数据库中字段
                 var columnName = dt.Columns[i].ColumnName;
                 cell.SetCellValue(columnName);
             }

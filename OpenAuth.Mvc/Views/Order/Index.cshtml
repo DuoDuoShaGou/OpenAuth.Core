@@ -57,40 +57,44 @@
 
 
     <div id="divOrderEdit" style="display: none">
-        <form class="layui-form layui-form-pane" style="padding: 10px;" id="mOrderEdit">
+        <form class="layui-form layui-form-pane" style="padding-left: 10px;" id="mOrderEdit">
 
-            <input type="hidden" id="PO_NO" name="Id" v-model="tmp.PO_NO" />
-            <input type="hidden" id="ITEM" name="ModuleId" v-model="tmp.ITEM" />
+            <input type="hidden" id="PO_NO" name="PO_NO" v-model="tmp.PO_NO" />
+            <input type="hidden" id="ITEM" name="ITEM" v-model="tmp.ITEM" />
 
             <div class="layui-form-item">
                 <label class="layui-form-label">PO NO</label>
                 <div class="layui-input-inline">
-                    <input type="text" id="PO_NO" name="PO_NO" v-model="tmp.Name" required lay-verify="required"
-                           placeholder="" autocomplete="off" class="layui-input">
+                    <input type="text" id="PO_NO" name="PO_NO" v-model="tmp.PO_NO" required lay-verify="required"
+                           placeholder="PO NO" autocomplete="off" class="layui-input">
                 </div>
                 <label class="layui-form-label">Customer</label>
                 <div class="layui-input-inline">
                     <input type="text" id="Customer" name="Customer" v-model="tmp.Customer" required lay-verify="required"
-                           placeholder="" autocomplete="off" class="layui-input">
+                           placeholder="Customer" autocomplete="off" class="layui-input">
                 </div>
             </div>
 
             <div class="layui-form-item">
+                <label class="layui-form-label">Name</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="Name" name="Name" placeholder="Name" v-model="tmp.Name" class="layui-input">
+                </div>
                 <label class="layui-form-label">Buyer</label>
                 <div class="layui-input-inline">
-                    <input type="text" id="Buyer" name="Buyer" v-model="tmp.Buyer" lay-filter="btnIconPicker" class="layui-input">
-                </div>
-                <label class="layui-form-label">PO Date</label>
-                <div class="layui-input-inline">
-                    <input type="text" id="PO_Date" name="PO_Date" v-model="tmp.PO_Date"
-                           placeholder="" autocomplete="off" class="layui-input">
+                    <input type="text" id="Buyer" name="Buyer" placeholder="Buyer" v-model="tmp.Buyer" class="layui-input">
                 </div>
             </div>
             <div class="layui-form-item">
-                <label class="layui-form-label">Description</label>
+                <label class="layui-form-label">PO Date</label>
                 <div class="layui-input-inline">
-                    <input type="text" style="width:500px;" id="Description" name="Description" v-model="tmp.Description" required lay-verify="required"
-                           placeholder="Description" autocomplete="off" class="layui-input">
+                    <input type="text" id="PO_Date" name="PO_Date" v-model="tmp.PO_Date"
+                           placeholder="PO Date" autocomplete="off" class="layui-input">
+                </div>
+                <label class="layui-form-label">Required Shipping Date</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="Required_Shipping_Date" name="Required_Shipping_Date" v-model="tmp.Required_Shipping_Date" required lay-verify="required"
+                           placeholder="Required Shipping Date" autocomplete="off" class="layui-input">
                 </div>
             </div>
             <div class="layui-form-item">
@@ -101,7 +105,7 @@
                 </div>
                 <label class="layui-form-label">Project</label>
                 <div class="layui-input-inline">
-                    <input type="text" id="Project" name="Project" v-model="tmp.Project" required lay-verify="required"
+                    <input type="text" id="Project" name="Project" v-model="tmp.Project"
                            placeholder="Project" autocomplete="off" class="layui-input">
                 </div>
             </div>
@@ -118,10 +122,10 @@
                 </div>
             </div>
             <div class="layui-form-item">
-                <label class="layui-form-label">Required Shipping Date</label>
+                <label class="layui-form-label">Description</label>
                 <div class="layui-input-inline">
-                    <input type="text" id="Required_Shipping_Date" name="Required_Shipping_Date" v-model="tmp.Required_Shipping_Date" required lay-verify="required"
-                           placeholder="Qty" autocomplete="off" class="layui-input">
+                    <input type="text" style="width:500px;" id="Description" name="Description" v-model="tmp.Description" required lay-verify="required"
+                           placeholder="Description" autocomplete="off" class="layui-input">
                 </div>
             </div>
             <div class="layui-form-item">
