@@ -1,0 +1,94 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>BOM Management System</title>
+    <meta name="Keywords" content="BOM Management System">
+    <meta name="Description" content="BOM Management System">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta http-equiv="Access-Control-Allow-Origin" content="*">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <link rel="stylesheet" href="/layui/css/layui.css" media="all" />
+    <link href="~/css/font_tnyc012u2rlwstt9.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/main.css" media="all" />
+</head>
+<body class="main_body">
+    <div class="layui-layout layui-layout-admin">
+        <!-- 顶部 -->
+        <div class="layui-header header">
+            <div class="layui-main">
+                <a href="#" class="logo" style=" font-size: 20px; width: 250px; padding: 0;">BOM Management System</a>
+                <!-- 显示/隐藏菜单 -->
+                <a href="javascript:;" class="iconfont hideMenu icon-menu1"></a>
+
+                <!-- 顶部右侧菜单 -->
+                <ul class="layui-nav top_menu">
+                    <li class="layui-nav-item" mobile>
+                        <a href="/Login/Logout" class="signOut"><i class="iconfont icon-loginout"></i> Sign out</a>
+                    </li>
+                    <li class="layui-nav-item" pc>
+                        <a href="javascript:;">
+                            <cite id="usernametop"></cite>
+                        </a>
+                        <dl class="layui-nav-child">
+                            <dd><a href="javascript:;" data-url="/UserManager/ChangePassword"><i class="iconfont icon-shezhi1" data-icon="icon-shezhi1"></i><cite>Change Password</cite></a></dd>
+                            <dd><a href="/Login/Logout" class="signOut"><i class="iconfont icon-loginout"></i><cite>Sign out</cite></a></dd>
+                        </dl>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <!-- 左侧导航 -->
+        <div class="layui-side layui-bg-black">
+            <div class="navBar layui-side-scroll"></div>
+        </div>
+        <!-- 右侧内容 -->
+        <div class="layui-body layui-form">
+            <div class="layui-tab layui-tab-card marg0" lay-filter="bodyTab" id="top_tabs_box">
+                <ul class="layui-tab-title top_tab" id="top_tabs">
+                    <li class="layui-this" lay-id=""><i class="iconfont icon-computer"></i> <cite>Home page</cite></li>
+                </ul>
+                <ul class="layui-nav closeBox">
+                    <li class="layui-nav-item">
+                        <a href="javascript:;"><i class="iconfont icon-caozuo"></i> Page operation</a>
+                        <dl class="layui-nav-child">
+                            <dd><a href="javascript:;" class="refresh refreshThis"><i class="layui-icon">&#x1002;</i> Refresh current</a></dd>
+                            <dd><a href="javascript:;" class="closePageOther"><i class="iconfont icon-prohibit"></i> Close other</a></dd>
+                            <dd><a href="javascript:;" class="closePageAll"><i class="iconfont icon-guanbi"></i> Close all</a></dd>
+                        </dl>
+                    </li>
+                </ul>
+                <div class="layui-tab-content clildFrame">
+                    <div class="layui-tab-item layui-show">
+                        <iframe src="/Home/Main"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 底部 -->
+        <div class="layui-footer footer">
+            <p>copyright @@2020 广州雄义精密五金有限公司</p>
+        </div>
+    </div>
+
+    <!-- 移动导航 -->
+    <div class="site-tree-mobile layui-hide"><i class="layui-icon">&#xe602;</i></div>
+    <div class="site-mobile-shade"></div>
+
+    
+    <div id="loadingPage" style="display: none;">
+        <div class="loading-shade"></div>
+        <div class="loading-content" onclick="$.loading(false)">文件上传中......</div>
+    </div>
+
+    <script type="text/javascript" src="/js/leftNav.js"></script>
+    <script type="text/javascript" src="/js/index.js?v2.0.0"></script>
+</body>
+</html>

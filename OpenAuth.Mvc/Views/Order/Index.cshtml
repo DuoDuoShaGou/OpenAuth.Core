@@ -1,0 +1,143 @@
+﻿@{
+   
+}
+<style>
+    .layui-form-label {
+        float: left;
+        display: block;
+        padding: 0;
+        width: auto;
+        font-weight: 400;
+        line-height: 20px;
+        text-align: right;
+        margin-top: 10px;
+    }
+
+    .layui-form-pane .layui-input-inline {
+        margin-left: -1px;
+        margin-top: 10px;
+    }
+</style>
+
+<form class="layui-form" action="" style="width: 100%;margin-top:10px;margin-left: 5px;">
+    <div class="layui-form-item">
+        <label class="layui-form-label">keyword:</label>
+        <div class="layui-input-inline">
+            <input id="keyword" type="text" class="layui-input" />
+        </div>
+        <label class="layui-form-label">PO Date:</label>
+        <div class="layui-input-inline">
+            <input id="startPODate" type="text" class="layui-input layui-date " />-
+            <input id="endPODate" type="text" class="layui-input layui-date " />
+        </div>
+        <label class="layui-form-label">Required Shipping Date:</label>
+        <div class="layui-input-inline">
+            <input id="startShipDate" type="text" class="layui-input layui-date" />-
+            <input id="endShipDate" type="text" class="layui-input layui-date " />
+        </div>
+        <div class="layui-input-inline">
+            <button type="button" id="searchBtn" class="layui-btn">search</button>
+        </div>
+    </div>
+    <div class="layui-form-item toolList">
+            <button type="button" data-type="btnAdd" class="layui-btn layui-btn-small layui-btn-normal button">Add</button>
+            <button type="button" data-type="btnEdit" class="layui-btn layui-btn-small layui-btn-normal button">Edit</button>
+            <button type="button" data-type="btnDel" class="layui-btn layui-btn-small layui-btn-normal button">Delete</button>
+            <button type="button" class="layui-btn layui-btn-small layui-btn-normal" id="btnImport">Import</button>
+            <button type="button" data-type="btnExport" class="layui-btn layui-btn-small layui-btn-normal button" onlick="exportOrder()">Export</button>
+    </div>
+</form>
+
+<div class="m-box" style=" position: relative; z-index: 1;">
+    <table class="layui-table" id="orderList"
+           lay-data="{height: 'full', page:false, id:'orderList'}"
+           lay-filter="list" lay-size="sm">
+    </table>
+</div>
+
+
+    <div id="divOrderEdit" style="display: none">
+        <form class="layui-form layui-form-pane" style="padding: 10px;" id="mOrderEdit">
+
+            <input type="hidden" id="PO_NO" name="Id" v-model="tmp.PO_NO" />
+            <input type="hidden" id="ITEM" name="ModuleId" v-model="tmp.ITEM" />
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">PO NO</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="PO_NO" name="PO_NO" v-model="tmp.Name" required lay-verify="required"
+                           placeholder="" autocomplete="off" class="layui-input">
+                </div>
+                <label class="layui-form-label">Customer</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="Customer" name="Customer" v-model="tmp.Customer" required lay-verify="required"
+                           placeholder="" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">Buyer</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="Buyer" name="Buyer" v-model="tmp.Buyer" lay-filter="btnIconPicker" class="layui-input">
+                </div>
+                <label class="layui-form-label">PO Date</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="PO_Date" name="PO_Date" v-model="tmp.PO_Date"
+                           placeholder="" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">Description</label>
+                <div class="layui-input-inline">
+                    <input type="text" style="width:500px;" id="Description" name="Description" v-model="tmp.Description" required lay-verify="required"
+                           placeholder="Description" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">Type</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="Type" name="Type" v-model="tmp.Type" required lay-verify="required"
+                           placeholder="Type" autocomplete="off" class="layui-input">
+                </div>
+                <label class="layui-form-label">Project</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="Project" name="Project" v-model="tmp.Project" required lay-verify="required"
+                           placeholder="Project" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">Qty</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="Qty" name="Qty" v-model="tmp.Qty" required lay-verify="required"
+                           placeholder="Qty" autocomplete="off" class="layui-input">
+                </div>
+                <label class="layui-form-label">Price</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="Price" name="Price" v-model="tmp.Price" required lay-verify="required"
+                           placeholder="Price" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">Required Shipping Date</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="Required_Shipping_Date" name="Required_Shipping_Date" v-model="tmp.Required_Shipping_Date" required lay-verify="required"
+                           placeholder="Qty" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">Delivery Point</label>
+                <div class="layui-input-inline">
+                    <input type="text" style="width:500px;" id="Delivery_Point" name="Delivery_Point" v-model="tmp.Delivery_Point" required lay-verify="required"
+                           placeholder="Delivery Point" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button type="button" class="layui-btn" lay-submit lay-filter="formSubmit">立即提交</button>
+                    <button type="button" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+<script type="text/javascript" src="/userJs/order.js"></script>

@@ -1,0 +1,50 @@
+﻿@{
+
+}
+ <form class="layui-form" action="" style="width: 100%;margin-top:10px;">
+     <div class="layui-form-item">
+         <label class="layui-form-label">Name:</label>
+         <div class="layui-input-inline" >
+             <div class="layui-form-select" >
+                 <div class="layui-select-title">
+                     <input type="text" class="layui-input" placeholder="Please enter the Component English name/Bom code/material part number." value="" onkeyup="fuzzyquery()"
+                            name="select_input" autocomplete="off" id="select_input">
+                     <i class="layui-edge"></i>
+                     <div id="select_show" style="width: 500px;display:none;z-index:999;position:absolute;" name="select_show" class="layui-anim layui-anim-upbit">
+                         <table class="layui-table" id="prdNoList"
+                                lay-data="{height: 'full', page:false, id:'prdNoList'}"
+                                lay-filter="prdNo" lay-size="sm">
+                         </table>
+                     </div>
+                 </div>
+             </div>
+         </div>
+         <div class="layui-input-inline">
+             <input id="BOM_NO" type="hidden" />
+             <button type="button" class="layui-btn" onclick="fuzzyquery()">search</button>
+         </div>
+         <div class="layui-input-inline" style="float:right">
+             <button type="button" class="layui-btn" id="uploadBtn">
+                 <i class="layui-icon">&#xe67c;</i>Upload
+             </button>
+         </div>
+     </div>
+     <div class="layui-form-item">
+         <div class="layui-input-inline">
+             <label class="layui-form-label" style="padding: 9px 0px;">Name:</label>
+             <label class="layui-form-label layui-form-label-col" style=" width: 200px; padding: 9px 0px;text-align:left; " id="keyValue"></label>
+         </div>
+     </div>
+</form>
+ <div class="m-box" style=" position: relative; z-index: 1;">
+     <table class="layui-hide" id="mainList" style="display:none;"
+            lay-data="{height: 'full', page:false, id:'mainList'}"
+            lay-filter="list" lay-size="sm">
+     </table>
+     <table class="layui-hide" id="fileList" style="display:none;"
+            lay-data="{height: 'full', page:false, id:'fileList'}"
+            lay-filter="list" lay-size="sm">
+     </table>
+ </div>
+
+<script type="text/javascript" src="/userJs/BOM.js?v2.0.0"></script>

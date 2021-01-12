@@ -1,0 +1,71 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>BOM Management System</title>
+    <meta name="Keywords" content="openauth.net,.net开源工作流,.NET开源权限管理">
+    <meta name="Description" content="最好用的.net开源工作流框架,最好用的.NET开源权限管理框架">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <link rel="stylesheet" href="../../layui/css/layui.css" media="all" />
+    <link rel="stylesheet" href="../../css/login.css" media="all" />
+</head>
+<body class="main" style="background-position: -280.8px 0px;">
+
+    <div id="mainBody">
+        <div id="cloud1" class="cloud" style="background-position: 891.1px 100px;"></div>
+        <div id="cloud2" class="cloud" style="background-position: 401px 460px;"></div>
+    </div>
+
+    <div class="logintop">
+        <img src="/images/logo.png" style="width: 40px;margin:5px;" />
+        <ul>
+            @*<li><a href="http://www.firefox.com.cn/download/" target="_blank"><b><font color="#FFF">推荐Firefox浏览器</font></b></a></li>*@
+        </ul>
+    </div>
+
+    <div class="loginbody">
+
+        <span class="systemlogo"></span>
+
+        <div class="loginbox" style="position: absolute; left: 294px;">
+            <div style="width:165px; height:96px; position:absolute;top:8px;left:-70px">
+                <div class="tou"></div>
+                <div class="initial_left_hand" id="left_hand"></div>
+                <div class="initial_right_hand" id="right_hand"></div>
+            </div>
+            <form class="layui-form" id="loginForm">
+                <ul>
+                    <li>
+                        <input name="username" type="text" class="loginuser" value=""
+                               placeholder="Please enter the password account" lay-verify="required">
+                    </li>
+                    <li>
+                        <input name="password" type="password" id="password" value=""
+                               class="loginpwd ipt" placeholder="Please enter the password" lay-verify="required">
+                    </li>
+                    <li>
+                        <label v-if="isIdentityAuth">
+                            <a href="/Redirects/IdentityAuth">服务器启用了Identity认证，强制在这里登录>></a>
+                        </label>
+                        <button v-else class="layui-btn loginbtn" lay-submit lay-filter="login">login</button>
+                    </li>
+                </ul>
+            </form>
+        </div>
+
+    </div>
+
+    <div class="loginbm">版权所有 2020  雄义精密五金有限公司 </div>
+    <script type="text/javascript" src="/layui/layui.js"></script>
+    <script type="text/javascript" src="/userJs/login.js?v=2.1"></script>
+</body>
+</html>
