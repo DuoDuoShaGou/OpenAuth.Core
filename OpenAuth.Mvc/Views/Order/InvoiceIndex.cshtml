@@ -1,0 +1,124 @@
+﻿@{
+}
+<style>
+    .layui-form-label {
+        float: left;
+        display: block;
+        padding: 0;
+        width: auto;
+        font-weight: 400;
+        line-height: 20px;
+        text-align: right;
+        margin-top: 10px;
+    }
+
+    .layui-form-pane .layui-input-inline {
+        margin-left: -1px;
+        margin-top: 10px;
+    }
+</style>
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">Edit</a>
+</script>
+<form class="layui-form" action="" style="width: 100%;margin-top:10px;margin-left: 5px;">
+    <div class="layui-form-item">
+        <label class="layui-form-label">SI/DR No.</label>
+        <div class="layui-input-inline">
+            <input id="keyword" type="text" class="layui-input" />
+        </div>
+        <div class="layui-input-inline">
+            <button type="button" id="searchBtn" class="layui-btn">search</button>
+        </div>
+    </div>
+    <div class="layui-form-item toolList">
+        <button type="button" data-type="btnExport" class="layui-btn layui-btn-small layui-btn-normal button" onlick="exportOrder()">Export</button>
+    </div>
+</form>
+<div class="m-box" style=" position: relative; z-index: 1;">
+    <table class="layui-table" id="invoiceList"
+           lay-data="{height: 'full', page:false, id:'invoiceList'}"
+           lay-filter="list" lay-size="sm">
+    </table>
+</div>
+
+<div id="divOrderEdit" style="display: none">
+    <form class="layui-form layui-form-pane" style="padding-left: 10px;" id="mOrderEdit">
+
+        <input type="hidden" id="ID" name="ID" v-model="tmp.ID" />
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">CONTAINER NO.</label>
+            <div class="layui-input-inline">
+                <input type="text" id="CONTAINER_NO" name="CONTAINER_NO" v-model="tmp.CONTAINER_NO" required lay-verify="required"
+                       placeholder="CONTAINER NO" autocomplete="off" class="layui-input">
+            </div>
+            <label class="layui-form-label">Seal NO.</label>
+            <div class="layui-input-inline">
+                <input type="text" id="Seal_NO" name="Seal_NO" v-model="tmp.Seal_NO" required lay-verify="required"
+                       placeholder="Seal NO." autocomplete="off" class="layui-input" >
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">B/L NO.</label>
+            <div class="layui-input-inline">
+                <input type="text" id="BL_NO" name="BL_NO" placeholder="B/L NO." v-model="tmp.BL_NO" class="layui-input" >
+            </div>
+            <label class="layui-form-label">VESSEL</label>
+            <div class="layui-input-inline">
+                <input type="text" id="VESSEL" name="VESSEL" placeholder="VESSEL" v-model="tmp.VESSEL" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">ETD</label>
+            <div class="layui-input-inline">
+                <input type="text" id="ETD" name="ETD" v-model="tmp.ETD"
+                       placeholder="ETD" autocomplete="off" class="layui-input">
+            </div>
+            <label class="layui-form-label">ETA</label>
+            <div class="layui-input-inline">
+                <input type="text" id="ETA" name="ETA" v-model="tmp.ETA" 
+                       placeholder="ETA" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">TERMS OF SALE.</label>
+            <div class="layui-input-inline">
+                <input type="text" id="TERMS_OF_SALE" name="TERMS_OF_SALE" v-model="tmp.TERMS_OF_SALE" 
+                       placeholder="TERMS OF SALE." value="NET 10 DAYS" autocomplete="off" class="layui-input">
+            </div>
+            <label class="layui-form-label">COUNTRY OF ORIGIN</label>
+            <div class="layui-input-inline">
+                <input type="text" id="COUNTRY_OF_ORIGIN" name="COUNTRY_OF_ORIGIN" v-model="tmp.COUNTRY_OF_ORIGIN" 
+                       placeholder="COUNTRY OF ORIGIN" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">SHIPMENT FROM</label>
+                <div class="layui-input-inline">
+                    <input type="text" style="width:500px;" id="SHIPMENT_FROM" name="SHIPMENT_FROM" v-model="tmp.SHIPMENT_FROM"
+                           placeholder="SHIPMENT FROM" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">Tax</label>
+            <div class="layui-input-inline">
+                <input type="text" id="Tax" name="Tax" v-model="tmp.Tax"
+                       placeholder="Tax" autocomplete="off" class="layui-input">
+            </div>
+            <label class="layui-form-label">Freight</label>
+            <div class="layui-input-inline">
+                <input type="text" id="Freight" name="Freight" v-model="tmp.Freight"
+                       placeholder="Freight" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button type="button" class="layui-btn" lay-submit lay-filter="formSubmit">Submit</button>
+                <button type="button" class="layui-btn layui-btn-primary layui-layer-close">Close</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script src="~/userJs/invoice.js"></script>

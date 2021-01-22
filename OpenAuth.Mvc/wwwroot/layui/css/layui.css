@@ -3484,7 +3484,7 @@ a {
 .layui-table-cell {
     height: 28px;
     line-height: 28px;
-    padding: 0 3px;
+    padding: 0 1px;
     position: relative;
     box-sizing: border-box
 }

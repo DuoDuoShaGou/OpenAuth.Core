@@ -29,7 +29,7 @@ namespace Infrastructure.Helpers
         //    source.CopyTo(result);
         //    return result;
         //}
-      
+
         //public static void CopyTo<T>(this object source, T target)
         //    where T : class,new()
         //{
@@ -64,6 +64,42 @@ namespace Infrastructure.Helpers
         //        }
         //    }
         //}
+
+        public static T ConvertToEntity(DataTable dt)
+        {
+            // 定义集合    
+            T t = new T();
+
+            if (dt == null)
+            {
+                return t;
+            }
+
+            // 获得此模型的类型   
+            Type type = typeof(T);
+            string tempName = "";
+
+            DataRow dr = dt.Rows[0];
+
+            // 获得此模型的公共属性      
+            PropertyInfo[] propertys = t.GetType().GetProperties();
+            foreach (PropertyInfo pi in propertys)
+            {
+                tempName = pi.Name;  // 检查DataTable是否包含此列    
+
+                if (dt.Columns.Contains(tempName))
+                {
+                    // 判断此属性是否有Setter      
+                    if (!pi.CanWrite) continue;
+
+                    object value = dr[tempName];
+                    if (value != DBNull.Value)
+                        pi.SetValue(t, value.ToString(), null);
+                }
+            }
+
+            return t;
+        }
 
         public static IList<T> ConvertToModel(DataTable dt)
         {

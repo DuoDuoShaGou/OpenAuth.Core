@@ -30,7 +30,7 @@
             <input id="startPODate" type="text" class="layui-input layui-date " />-
             <input id="endPODate" type="text" class="layui-input layui-date " />
         </div>
-        <label class="layui-form-label">Required Shipping Date:</label>
+        <label class="layui-form-label">R.S.Date:</label>
         <div class="layui-input-inline">
             <input id="startShipDate" type="text" class="layui-input layui-date" />-
             <input id="endShipDate" type="text" class="layui-input layui-date " />
@@ -89,12 +89,12 @@
                 <label class="layui-form-label">PO Date</label>
                 <div class="layui-input-inline">
                     <input type="text" id="PO_Date" name="PO_Date" v-model="tmp.PO_Date"
-                           placeholder="PO Date" autocomplete="off" class="layui-input">
+                           placeholder="PO Date" autocomplete="on" class="layui-input">
                 </div>
                 <label class="layui-form-label">Required Shipping Date</label>
                 <div class="layui-input-inline">
-                    <input type="text" id="Required_Shipping_Date" name="Required_Shipping_Date" v-model="tmp.Required_Shipping_Date" required lay-verify="required"
-                           placeholder="Required Shipping Date" autocomplete="off" class="layui-input">
+                    <input type="text" id="Required_Shipping_Date" name="Required_Shipping_Date" v-model="tmp.Required_Shipping_Date" 
+                           placeholder="Required Shipping Date" autocomplete="on" class="layui-input">
                 </div>
             </div>
             <div class="layui-form-item">
@@ -112,7 +112,7 @@
             <div class="layui-form-item">
                 <label class="layui-form-label">Qty</label>
                 <div class="layui-input-inline">
-                    <input type="text" id="Qty" name="Qty" v-model="tmp.Qty" required lay-verify="required"
+                    <input type="text" id="Qty" name="Qty" v-model="tmp.Qty" required lay-verify="required|number|Qty"
                            placeholder="Qty" autocomplete="off" class="layui-input">
                 </div>
                 <label class="layui-form-label">Price</label>
@@ -138,7 +138,8 @@
             <div class="layui-form-item">
                 <div class="layui-input-block">
                     <button type="button" class="layui-btn" lay-submit lay-filter="formSubmit">立即提交</button>
-                    <button type="button" class="layui-btn layui-btn-primary">重置</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                    <button type="button" class="layui-btn layui-btn-primary layui-layer-close">Close</button>
                 </div>
             </div>
         </form>

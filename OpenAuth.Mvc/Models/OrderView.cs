@@ -23,5 +23,9 @@ namespace OpenAuth.Mvc.Models
         public string Required_Shipping_Date { get; set; }
         public string Delivery_Point { get; set; }
         public string Status { get; set; }
+        public string Product_Qty { get; set; }
+        public string Shipment_Qty { get; set; }
+        public string UNShipment_Qty { get; set; }
+        public string Remark { get; set; }
     }
 }

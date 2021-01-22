@@ -93,16 +93,6 @@
         }
     })
 
-    laydate.render({
-        elem: "#PO_Date",
-        trigger: "click"
-    });
-
-    laydate.render({
-        elem: "#Required_Shipping_Date",
-        trigger: "click"
-    });
-
     var orderList = function () {
         $.getJSON('/Order/GetOrderList',
             {
@@ -118,34 +108,38 @@
                     data: data,
                     cols: [[
                         { type: 'checkbox' }
-                        , { field: 'PO_NO', width: 100, title: 'PO NO' }
+                        , { field: 'PO_NO', width: 80, title: 'PO NO' }
                         , { field: 'ITEM', width: 80, title: 'ITEM', hide: true }
-                        , { field: 'Customer', width: 100, title: 'Customer' }
-                        , { field: 'Buyer', width: 80, title: 'Buyer' }
-                        , { field: 'PO_Date', width: 120, title: 'PO Date' }
-                        , { field: 'Name', width: 120, title: 'Name' }
-                        , { field: 'Description', width: 120, title: 'Description' }
+                        , { field: 'Customer', width: 60, title: 'Customer' }
+                        , { field: 'Buyer', width: 100, title: 'Buyer' }
+                        , {
+                            field: 'PO_Date', width: 70, title: 'PO Date'
+                        }
+                        , { field: 'Name', width: 130, title: 'Name' }
+                        , { field: 'Description', width: 130, title: 'Description' }
                         , { field: 'Type', width: 60, title: 'Type' }
                         , { field: 'Project', width: 60, title: 'Project' }
                         , {
-                            field: 'Qty', width: 80, title: 'Qty', templet: function (row) {
+                            field: 'Qty', width: 50, title: 'Qty', templet: function (row) {
                                 return parseFloat(row.Qty).toFixed(2);
                             }
                         }
                         , {
-                            field: 'Price', width: 80, title: 'Price', templet: function (row) {
+                            field: 'Price', width: 50, title: 'Price', templet: function (row) {
                                 return "$" + parseFloat(row.Price).toFixed(2);
                             }
                         }
                         , {
-                            field: 'Amount', width: 80, title: 'Amount', templet: function (row) {
+                            field: 'Amount', width: 60, title: 'Amount', templet: function (row) {
                                 return "$" + parseFloat(row.Qty) * parseFloat(row.Price).toFixed(2);
                             }
                         }
-                        , { field: 'Required_Shipping_Date', width: 120, title: 'Required Shipping Date' }
-                        , { field: 'Delivery_Point', width: 120, title: 'Delivery Point' }
                         , {
-                            field: 'Status', width: 60, title: 'Status', templet: function (row) {
+                            field: 'Required_Shipping_Date', width: 70, title: 'Required Shipping Date'
+                        }
+                        , { field: 'Delivery_Point', width: 160, title: 'Delivery Point' }
+                        , {
+                            field: 'Status', width: 50, title: 'Status', templet: function (row) {
                                 switch (parseInt(row.Status)) {
                                     case 0:
                                         return "已录入";
@@ -188,14 +182,35 @@
                                     tmp: data  //使用一个tmp封装一下，后面可以直接用vm.tmp赋值
                                 }
                             },
-                            watch: {
-                                tmp(val) {
-                                    this.$nextTick(function () {
-                                        form.render();  //刷新select等
-                                    })
-                                }
-                            },
                             mounted() {
+                                if (data.Qty != null && data.Qty!="") {
+                                    data.Qty = parseFloat(data.Qty).toFixed(2);
+                                    if (data.Price != null) {
+                                        data.Price = parseFloat(data.Price).toFixed(2);
+                                    }
+                                }
+                                laydate.render({
+                                    elem: "#PO_Date",
+                                    trigger: "click",
+                                    done: value => { 
+                                        this.tmp.PO_Date = value;
+                                    }
+                                });
+
+                                laydate.render({
+                                    elem: "#Required_Shipping_Date",
+                                    trigger: "click",
+                                    done: value => {
+                                        this.tmp.Required_Shipping_Date = value;
+                                    }
+                                });
+                                form.verify({
+                                    number: function (value) {
+                                        if (isNaN(value)) {
+                                            return "请填入数字";
+                                        }
+                                    }
+                                });
                                 form.render();
                             }
                         });
@@ -216,6 +231,8 @@
                         data.field,
                         function (resp) {
                             layer.msg(JSON.parse(resp).msg);
+                            orderList();
+                            $(".layui-layer-close").click();
                         },"json");
                     return false;
                 });
@@ -243,6 +260,10 @@
         orderList();
     });
 
+    $("#keyword").keyup(function () {
+        orderList();
+    });
+
     var active = {
         btnAdd: function () {  //添加模块
             editDlg.add();
@@ -258,6 +279,10 @@
         }
         , btnDel: function () {
             var checkStatus = table.checkStatus('orderList'), data = checkStatus.data;
+            if (data.length < 1) {
+                layer.msg("请选择删除的行！");
+                return;
+            }
             var json = JSON.stringify(data);
             $.ajax({
                 url: '/Order/DeleteOrder',

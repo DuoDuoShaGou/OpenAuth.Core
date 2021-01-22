@@ -1,0 +1,146 @@
+﻿@{
+}
+<style>
+    .layui-form-label {
+        float: left;
+        display: block;
+        padding: 0;
+        width: auto;
+        font-weight: 400;
+        line-height: 20px;
+        text-align: right;
+        margin-top: 10px;
+    }
+
+    .layui-form-pane .layui-input-inline {
+        margin-left: -1px;
+        margin-top: 10px;
+    }
+</style>
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">Edit</a>
+</script>
+<form class="layui-form" action="" style="width: 100%;margin-top:10px;margin-left: 5px;">
+    <div class="layui-form-item">
+        <label class="layui-form-label">keyword:</label>
+        <div class="layui-input-inline">
+            <input id="keyword" type="text" class="layui-input" />
+        </div>
+        <label class="layui-form-label">R.S.Date:</label>
+        <div class="layui-input-inline">
+            <input id="startShipDate" type="text" class="layui-input layui-date" />-
+            <input id="endShipDate" type="text" class="layui-input layui-date " />
+        </div>
+        <label class="layui-form-label">Status:</label>
+        <div class="layui-input-inline">
+            <select id="Status" name="Status" lay-filter="status">
+                <option value="0">已录入</option>
+                <option value="1">生产中</option>
+                <option value="2" selected="selected">已完成</option>
+                <option value="3">已出货</option>
+                <option value="4">已收款</option>
+            </select>
+        </div>
+        <div class="layui-input-inline">
+            <button type="button" id="searchBtn" class="layui-btn">search</button>
+        </div>
+    </div>
+    <div class="layui-form-item toolList">
+        <button type="button" data-type="btnExport" class="layui-btn layui-btn-small layui-btn-normal button" onlick="exportOrder()">Export</button>
+    </div>
+</form>
+<div class="layui-row">
+    <div class="layui-tab">
+        <ul class="layui-tab-title">
+            <li class="layui-this">订单列表</li>
+            <li id="delivery">送货申请</li>
+        </ul>
+        <div class="layui-tab-content">
+            <div class="layui-tab-item layui-show">
+                <table class="layui-table" id="productList"
+                       lay-data="{height: 'full', page:false, id:'productList'}"
+                       lay-filter="list" lay-size="sm">
+                </table>
+            </div>
+            <div class="layui-tab-item">
+                <script type="text/html" id="toolbarDemo">
+                    <div class="layui-btn-container">
+                        <button class="layui-btn layui-btn-sm" lay-event="submit">提交</button>
+                    </div>
+                </script>
+                <table class="layui-table" id="unsubmitList"
+                       lay-data="{height: 'full-80', id:'unsubmitList'}"
+                       lay-filter="unsubmitList" lay-size="sm">
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <div id="divOrderEdit" style="display: none">
+        <form class="layui-form layui-form-pane" style="padding-left: 10px;" id="mOrderEdit">
+
+            <input type="hidden" id="PO_NO" name="PO_NO" v-model="tmp.PO_NO" />
+            <input type="hidden" id="ITEM" name="ITEM" v-model="tmp.ITEM" />
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">PO NO</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="PO_NO" name="PO_NO" v-model="tmp.PO_NO" required lay-verify="required"
+                           placeholder="PO NO" autocomplete="off" class="layui-input" readonly="readonly">
+                </div>
+                <label class="layui-form-label">Customer</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="Customer" name="Customer" v-model="tmp.Customer" required lay-verify="required"
+                           placeholder="Customer" autocomplete="off" class="layui-input" readonly="readonly">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">Name</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="Name" name="Name" placeholder="Name" v-model="tmp.Name" class="layui-input" readonly="readonly">
+                </div>
+                <label class="layui-form-label">订单数量</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="Qty" name="Qty" v-model="tmp.Qty" required lay-verify="required|number" 
+                           placeholder="Qty" autocomplete="off" class="layui-input" readonly="readonly">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">已出货数量</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="Shipment_Qty" name="Shipment_Qty" v-model="tmp.Shipment_Qty" required lay-verify="required|number"
+                           placeholder="Shipment Qty" autocomplete="off" class="layui-input" readonly="readonly">
+                </div>
+                <label class="layui-form-label">出货数量</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="UNShipment_Qty" name="UNShipment_Qty" v-model="tmp.UNShipment_Qty" required lay-verify="required|number|Qty"
+                           placeholder="Quantity not shipped" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">Remark</label>
+                <div class="layui-input-inline">
+                    <input type="text" style="width:500px;" id="Remark" name="Remark" v-model="tmp.Remark" 
+                           placeholder="Remark" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button type="button" class="layui-btn" lay-submit lay-filter="formSubmit">Submit</button>
+                    <button type="button" class="layui-btn layui-btn-primary layui-layer-close">Close</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div id="divShipDetail" style="display:none;">
+        <table class="layui-table" id="shipList"
+               lay-data="{height: 'full-80', id:'shipList'}"
+               lay-filter="shipList" lay-size="sm">
+        </table>
+    </div>
+
+    <script src="~/userJs/shipment.js"></script>
