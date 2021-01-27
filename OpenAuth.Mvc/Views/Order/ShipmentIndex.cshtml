@@ -103,7 +103,7 @@
                 </div>
                 <label class="layui-form-label">订单数量</label>
                 <div class="layui-input-inline">
-                    <input type="text" id="Qty" name="Qty" v-model="tmp.Qty" required lay-verify="required|number" 
+                    <input type="text" id="Qty" name="Qty" v-model="tmp.Qty" required lay-verify="required|number"
                            placeholder="Qty" autocomplete="off" class="layui-input" readonly="readonly">
                 </div>
             </div>
@@ -120,9 +120,16 @@
                 </div>
             </div>
             <div class="layui-form-item">
+                <label class="layui-form-label">Material</label>
+                <div class="layui-input-inline">
+                    <select id="MATERIAL" name="MATERIAL" lay-filter="MATERIAL" v-model="tmp.MATERIAL">
+                    </select>
+                </div>
+            </div>
+            <div class="layui-form-item">
                 <label class="layui-form-label">Remark</label>
                 <div class="layui-input-inline">
-                    <input type="text" style="width:500px;" id="Remark" name="Remark" v-model="tmp.Remark" 
+                    <input type="text" style="width:500px;" id="REMARK" name="REMARK" v-model="tmp.REMARK"
                            placeholder="Remark" autocomplete="off" class="layui-input">
                 </div>
             </div>

@@ -17,6 +17,7 @@ using OpenAuth.Mvc.Models;
 using System.Text;
 using Newtonsoft.Json;
 using NPOI.SS.Util;
+using System.Data;
 
 namespace OpenAuth.Mvc.Controllers
 {
@@ -644,6 +645,8 @@ namespace OpenAuth.Mvc.Controllers
                 str.Append(" AND Status = 0");
             }
 
+
+
             var dt = _dbHelper.QueryTable(str.ToString());
 
             var list = ObjectHelper<OrderView>.ConvertToModel(dt);
@@ -655,7 +658,7 @@ namespace OpenAuth.Mvc.Controllers
 
         public string GetShipmentList(string PO_NO,string ITEM)
         {
-            string sql = string.Format($"SELECT [SIDR_NO],[PO_NO], [PO_ITEM], [Qty],CONVERT(varchar(100), [BILL_DATE], 111) [BILL_DATE], [REMARK] FROM [XY_SIDR_BILL] WHERE PO_NO='{PO_NO}' AND PO_ITEM={ITEM}");
+            string sql = string.Format($"SELECT [SIDR_NO],[PO_NO], [PO_ITEM], [Qty],CONVERT(varchar(100), [BILL_DATE], 111) [BILL_DATE],[MATERIAL], [REMARK] FROM [XY_TF_SIDR] WHERE PO_NO='{PO_NO}' AND PO_ITEM={ITEM}");
 
             var dt = _dbHelper.QueryTable(sql);
 
@@ -670,7 +673,7 @@ namespace OpenAuth.Mvc.Controllers
         {
             string sql = string.Format(@"SELECT A.ID, A.[SIDR_NO], A.[PO_NO], B.[Customer],
 	        B.[Name], A.[PO_ITEM], A.[Qty], CONVERT ( VARCHAR (100), A.[BILL_DATE], 111 ) [BILL_DATE],
-	        A.[REMARK] FROM [XY_SIDR_BILL] A LEFT JOIN [XY_POS] B ON A.PO_NO=B.PO_NO AND A.PO_ITEM=B.ITEM
+	        A.[REMARK] FROM [XY_TF_SIDR] A LEFT JOIN [XY_POS] B ON A.PO_NO=B.PO_NO AND A.PO_ITEM=B.ITEM
             WHERE A.SIDR_NO IS NULL;");
 
             var dt = _dbHelper.QueryTable(sql);
@@ -682,33 +685,35 @@ namespace OpenAuth.Mvc.Controllers
             return json;
         }
 
-        public IActionResult EditShipment(OrderView order)
+        public IActionResult EditShipment(ShipmentView shipment)
         {
             ArrayList list = new ArrayList();
 
             string str = string.Concat(new string[]
             {
-               "INSERT INTO [XY_SIDR_BILL] ([PO_NO], [PO_ITEM], [Qty], [BILL_DATE], [REMARK]) VALUES ('",
-               order.PO_NO ,
+               "INSERT INTO [XY_TF_SIDR] ([PO_NO], [PO_ITEM], [Qty], [BILL_DATE], [REMARK],[MATERIAL]) VALUES ('",
+               shipment.PO_NO ,
                "',",
-                order.ITEM,
+                shipment.ITEM,
                 ",",
-                order.UNShipment_Qty,
+                shipment.UNShipment_Qty,
                 ",'",
                 DateTime.Now.ToString(),
                  "','",
-                 order.Remark,
+                 shipment.REMARK,
+                  "','",
+                  shipment.MATERIAL,
                 "');"
             });
 
             string str1 = string.Concat(new string[]
             {
                 "UPDATE XY_POS SET Shipment_Qty=Shipment_Qty+",
-                order.UNShipment_Qty,
+                shipment.UNShipment_Qty,
                 " WHERE PO_NO='",
-                order.PO_NO ,
+                shipment.PO_NO ,
                 "' AND ITEM =",
-                order.ITEM,
+                shipment.ITEM,
                 ";"
             });
 
@@ -731,34 +736,44 @@ namespace OpenAuth.Mvc.Controllers
 
             foreach (var shipment in list)
             {
-                if (customer == shipment.Customer)
+                if(customer!=shipment.Customer)
                 {
-                    var SIDR_NO = GetShipmentNo(shipment.Customer, shipment.PO_NO, shipment.PO_ITEM);
-                    string str = string.Concat(new string[]
-                    {
-                        "UPDATE XY_SIDR_BILL SET SIDR_NO='",
+                    return Json(new { code = 0, msg = "所选货品非同一客户！", data = new { src = "" } }.ToJson());
+                }
+            }
+            var SIDR_NO = GetShipmentNo(customer);
+            string sql = string.Concat(new string[]
+            {
+               "INSERT INTO [XY_MF_SIDR] ([SIDR_NO],[INVOICE_DATE],[STATUS])VALUES('",
+               SIDR_NO ,
+               "','",
+                DateTime.Now.ToString(),
+                "',0);"
+            });
+            array.Add(sql);
+            foreach (var shipment in list)
+            {
+                string str = string.Concat(new string[]
+                        {
+                        "UPDATE XY_TF_SIDR SET SIDR_NO='",
                         SIDR_NO,
                         "' WHERE ID=",
                         shipment.ID,
                         ";"
-                    });
-                    array.Add(str);
-                }
-                else {
-                    return Json(new { code = 0, msg = "所选货品非同一客户！", data = new { src = "" } }.ToJson());
-                }
+                        });
+                array.Add(str);
             }
             if (_dbHelper.ExecuteNonQuery(array) > 0)
-                return Json(new { code = 0, msg = "操作成功！", data = new { src = "" } }.ToJson());
-            return Json(new { code = 0, msg = "操作失败！", data = new { src = "" } }.ToJson());
+                return Json(new { code = 0, msg = "操作成功！" }.ToJson());
+            return Json(new { code = 0, msg = "操作失败！" }.ToJson());
 
         }
 
-        private string GetShipmentNo(string Customer, string PO_NO, string ITEM)
+        private string GetShipmentNo(string Customer)
         {
             string start = Customer.Substring(0, 2) + "TP";
             string year = DateTime.Now.Year.ToString().Substring(2);
-            string sql = string.Format(@"SELECT RIGHT(SIDR_NO,4) FROM XY_SIDR_BILL WHERE PO_NO='" + PO_NO + "'" + "AND PO_ITEM=" + ITEM + " ORDER BY RIGHT(SIDR_NO,4) DESC;");
+            string sql = string.Format($"SELECT RIGHT(SIDR_NO,4) FROM XY_TF_SIDR WHERE LEFT(SIDR_NO,6) = '{ start + year }' ORDER BY RIGHT(SIDR_NO,4) DESC;");
             var item = _dbHelper.ExecuteScalar(sql);
             string tempVal = string.Empty;
             int dbNum, tempNum;
@@ -770,17 +785,18 @@ namespace OpenAuth.Mvc.Controllers
             }
             else
             {
-                string str = string.Format($"SELECT RIGHT(SIDR_NO,4) FROM XY_SIDR_BILL WHERE LEFT(SIDR_NO,6) = '{ start + year }' ORDER BY RIGHT(SIDR_NO,4) DESC;");
-                var num = _dbHelper.ExecuteScalar(str);
-                if (num != null && !num.Equals(DBNull.Value))
-                {
-                    dbNum = int.Parse(num.ToString());
-                    tempNum = dbNum + 1;
-                    tempVal = GetTempVal(dbNum, tempNum);
-                }
-                else {
-                    tempVal = "0001";
-                }
+                tempVal = "0001";
+                //string str = string.Format($"SELECT RIGHT(SIDR_NO,4) FROM XY_TF_SIDR WHERE LEFT(SIDR_NO,6) = '{ start + year }' ORDER BY RIGHT(SIDR_NO,4) DESC;");
+                //var num = _dbHelper.ExecuteScalar(str);
+                //if (num != null && !num.Equals(DBNull.Value))
+                //{
+                //    dbNum = int.Parse(num.ToString());
+                //    tempNum = dbNum + 1;
+                //    tempVal = GetTempVal(dbNum, tempNum);
+                //}
+                //else {
+
+                //}
             }
             return start + year + tempVal;
         }
@@ -882,14 +898,34 @@ namespace OpenAuth.Mvc.Controllers
             return View();
         }
 
-        public string GetInvoiceList(string keyword)
+        public string GetInvoiceList(string keyword,string status)
         {
             StringBuilder str = new StringBuilder();
 
-            string sql = string.Format(@"SELECT A.ID, A.[SIDR_NO], A.[PO_NO], B.[Customer],B.[Name], A.[PO_ITEM], A.[Qty], CONVERT ( VARCHAR (100), A.[BILL_DATE], 111 ) [BILL_DATE],
-            A.[REMARK],A.[CONTAINER_NO], A.[Seal_NO], A.[BL_NO], A.[VESSEL], A.[ETD], A.[ETA], A.[TERMS_OF_SALE], A.[COUNTRY_OF_ORIGIN], 
-            A.[SHIPMENT_FROM], A.[TAX], A.[FREIGHT] FROM [XY_SIDR_BILL] A LEFT JOIN [XY_POS] B ON A.PO_NO=B.PO_NO AND A.PO_ITEM=B.ITEM
-            WHERE A.SIDR_NO IS NOT NULL ");
+            string sql = string.Format(@"SELECT
+	        A.ID,
+	        A.[SIDR_NO],
+	        CONVERT (
+		        VARCHAR (100),
+		        A.[INVOICE_DATE],
+		        111
+	        ) [INVOICE_DATE],
+	        A.[CONTAINER_NO],
+	        A.[Seal_NO],
+	        A.[BL_NO],
+	        A.[VESSEL],
+	        A.[ETD],
+	        A.[ETA],
+	        A.[TERMS_OF_SALE],
+	        A.[COUNTRY_OF_ORIGIN],
+	        A.[SHIPMENT_FROM],
+	        A.[TAX],
+	        A.[FREIGHT],
+	        A.STATUS
+        FROM
+	        [XY_MF_SIDR] A
+        WHERE
+	        A.SIDR_NO IS NOT NULL");
 
             str.Append(sql);
 
@@ -898,7 +934,39 @@ namespace OpenAuth.Mvc.Controllers
                 str.Append(" AND SIDR_NO LIKE '%" + keyword + "%'");
             }
 
+            if(!string.IsNullOrEmpty(status))
+            {
+                str.Append(" AND STATUS =" + status);
+            }
+
             var dt = _dbHelper.QueryTable(str.ToString());
+
+            var list = ObjectHelper<ShipmentView>.ConvertToModel(dt);
+
+            var json = list.ToJson();
+
+            return json;
+        }
+
+        public string GetMaterialList()
+        {
+           
+            string sql = "SELECT [ID], [Name] FROM [XY_MATERIAL];";
+
+            var dt = _dbHelper.QueryTable(sql);
+
+            var list = ObjectHelper<ShipmentView>.ConvertToModel(dt);
+
+            var json = list.ToJson();
+
+            return json;
+        }
+
+        public string GetSIDRList(string SIDR_NO)
+        {
+            string sql = string.Format($"SELECT [SIDR_NO],[PO_NO], [PO_ITEM], [Qty],CONVERT(varchar(100), [BILL_DATE], 111) [BILL_DATE],[MATERIAL], [REMARK] FROM [XY_TF_SIDR] WHERE SIDR_NO ='{SIDR_NO}'");
+
+            var dt = _dbHelper.QueryTable(sql);
 
             var list = ObjectHelper<ShipmentView>.ConvertToModel(dt);
 
@@ -912,7 +980,7 @@ namespace OpenAuth.Mvc.Controllers
         {
             string str = string.Concat(new string[]
             {
-                "UPDATE [XY_SIDR_BILL] SET [CONTAINER_NO] = '",
+                "UPDATE [XY_MF_SIDR] SET [CONTAINER_NO] = '",
                 shipment.CONTAINER_NO,
                 "',[Seal_NO] = '",
                 shipment.Seal_NO,
@@ -949,12 +1017,27 @@ namespace OpenAuth.Mvc.Controllers
         {
             IWorkbook workbook = new XSSFWorkbook();
 
+            #region 表格布局
             var sheet = workbook.CreateSheet("Sheet");
 
-            sheet.AddMergedRegion(new CellRangeAddress(0, 0, 0, 7));
-            sheet.AddMergedRegion(new CellRangeAddress(1, 1, 0, 7));
-            sheet.AddMergedRegion(new CellRangeAddress(2, 2, 0, 7));
-            sheet.AddMergedRegion(new CellRangeAddress(3, 3, 0, 7));
+            sheet.AddMergedRegion(new CellRangeAddress(0, 0, 0, 6));
+            sheet.AddMergedRegion(new CellRangeAddress(1, 1, 0, 6));
+            sheet.AddMergedRegion(new CellRangeAddress(2, 2, 0, 6));
+            sheet.AddMergedRegion(new CellRangeAddress(3, 3, 0, 6));
+            sheet.AddMergedRegion(new CellRangeAddress(5, 5, 0, 2));
+            sheet.AddMergedRegion(new CellRangeAddress(6, 6, 0, 2));
+            sheet.AddMergedRegion(new CellRangeAddress(9, 9, 0, 2));
+            sheet.AddMergedRegion(new CellRangeAddress(10, 10, 0, 2));
+            sheet.AddMergedRegion(new CellRangeAddress(11, 11, 0, 2));
+            sheet.AddMergedRegion(new CellRangeAddress(12, 12, 0, 2));
+            sheet.AddMergedRegion(new CellRangeAddress(14, 14, 0, 2));
+
+            sheet.SetColumnWidth(0,9*256);
+            sheet.SetColumnWidth(1,15*256);
+            sheet.SetColumnWidth(3,25*256);
+            sheet.SetColumnWidth(5,15*256);
+            sheet.SetColumnWidth(6,30*256);
+            #endregion
 
             #region 表头样式
             ICellStyle titleStyle = workbook.CreateCellStyle();
@@ -992,6 +1075,14 @@ namespace OpenAuth.Mvc.Controllers
             headLeftFieldStyle.VerticalAlignment = VerticalAlignment.Center;
             headLeftFieldStyle.Alignment = HorizontalAlignment.Left;
 
+            ICellStyle headLeftValueStyle = workbook.CreateCellStyle();
+            IFont headLeftValueFont = workbook.CreateFont();
+            headLeftValueFont.FontName = "Arial";
+            headLeftValueFont.FontHeightInPoints = 9;
+            headLeftValueStyle.SetFont(headLeftValueFont);
+            headLeftValueStyle.VerticalAlignment = VerticalAlignment.Center;
+            headLeftValueStyle.Alignment = HorizontalAlignment.Left;
+
             ICellStyle headRightFieldStyle = workbook.CreateCellStyle();
             IFont headRightFieldFont = workbook.CreateFont();
             headRightFieldFont.FontName = "Arial";
@@ -999,6 +1090,62 @@ namespace OpenAuth.Mvc.Controllers
             headRightFieldStyle.SetFont(headRightFieldFont);
             headRightFieldStyle.VerticalAlignment = VerticalAlignment.Center;
             headRightFieldStyle.Alignment = HorizontalAlignment.Right;
+            
+            ICellStyle headRightValueStyle = workbook.CreateCellStyle();
+            IFont headRightValueFont = workbook.CreateFont();
+            headRightFieldFont.FontName = "Arial";
+            headRightFieldFont.FontHeightInPoints = 9;
+            headRightValueStyle.SetFont(headRightValueFont);
+            headRightValueStyle.VerticalAlignment = VerticalAlignment.Center;
+            headRightValueStyle.Alignment = HorizontalAlignment.Left;
+
+            ICellStyle headTextStyle = workbook.CreateCellStyle();
+            IFont headTextFont = workbook.CreateFont();
+            headTextFont.FontName = "Arial";
+            headTextFont.FontHeightInPoints = 9;
+            headTextStyle.SetFont(headTextFont);
+            headTextStyle.VerticalAlignment = VerticalAlignment.Center;
+            headTextStyle.Alignment = HorizontalAlignment.Left;
+            headTextStyle.WrapText = true;
+
+            ICellStyle colorCellStyle = workbook.CreateCellStyle();
+            colorCellStyle.FillBackgroundColor = NPOI.HSSF.Util.HSSFColor.Red.Index;
+            colorCellStyle.FillPattern = FillPattern.SolidForeground;
+            colorCellStyle.BorderBottom = BorderStyle.Thin;
+            colorCellStyle.BorderLeft = BorderStyle.Thin;
+            colorCellStyle.BorderRight = BorderStyle.Thin;
+            colorCellStyle.BorderTop = BorderStyle.Thin;
+
+            ICellStyle tableHeadCellStyle = workbook.CreateCellStyle();
+            tableHeadCellStyle.BorderBottom = BorderStyle.Thin;
+            tableHeadCellStyle.BorderLeft = BorderStyle.Thin;
+            tableHeadCellStyle.BorderRight = BorderStyle.Thin;
+            tableHeadCellStyle.BorderTop = BorderStyle.Thin;
+            IFont tableHeadCellFont = workbook.CreateFont();
+            tableHeadCellFont.FontName = "Arial";
+            tableHeadCellFont.FontHeightInPoints = 9;
+            tableHeadCellFont.IsBold = true;
+            tableHeadCellStyle.SetFont(tableHeadCellFont);
+
+            ICellStyle tableCellStyle = workbook.CreateCellStyle();
+            tableCellStyle.BorderBottom = BorderStyle.Thin;
+            tableCellStyle.BorderLeft = BorderStyle.Thin;
+            tableCellStyle.BorderRight = BorderStyle.Thin;
+            tableCellStyle.BorderTop = BorderStyle.Thin;
+            IFont tableCellFont = workbook.CreateFont();
+            tableCellFont.FontName = "Arial Narrow";
+            tableCellFont.FontHeightInPoints = 11;
+            tableCellStyle.VerticalAlignment = VerticalAlignment.Center;
+            tableCellStyle.Alignment = HorizontalAlignment.Left;
+            tableCellStyle.SetFont(tableCellFont);
+
+            ICellStyle footLeftCellStyle = workbook.CreateCellStyle();
+            IFont footLeftCellFont = workbook.CreateFont();
+            footLeftCellFont.FontName = "Arial Narrow";
+            footLeftCellFont.FontHeightInPoints = 9;
+            footLeftCellStyle.SetFont(footLeftCellFont);
+            footLeftCellStyle.VerticalAlignment = VerticalAlignment.Center;
+            footLeftCellStyle.Alignment = HorizontalAlignment.Left;
             #endregion
 
             #region 表头
@@ -1021,14 +1168,257 @@ namespace OpenAuth.Mvc.Controllers
             cell3.CellStyle = row3Style;
 
             var row4 = sheet.CreateRow(4);
-            var cell40= row3.CreateCell(0);
+            var cell40= row4.CreateCell(0);
             cell40.SetCellValue("BILL TO:");
             cell40.CellStyle = headLeftFieldStyle;
-            var cell44 = row3.CreateCell(5);
-            cell44.SetCellValue("INVOICE NUMBER.");
-            cell44.CellStyle = headRightFieldStyle;
+            var cell45 = row4.CreateCell(5);
+            cell45.SetCellValue("INVOICE NUMBER.");
+            cell45.CellStyle = headRightFieldStyle;
+            var cell46 = row4.CreateCell(6);
+            cell46.SetCellValue(shipment.SIDR_NO);
+            cell46.CellStyle = headRightValueStyle;
+
+            var row5 = sheet.CreateRow(5);
+            var cell50 = row5.CreateCell(0);
+            cell50.SetCellValue("VC BRANDS LLC");
+            cell50.CellStyle = headLeftValueStyle;
+            var cell55 = row5.CreateCell(5);
+            cell55.SetCellValue("INVOICE DATE.");
+            cell55.CellStyle = headRightFieldStyle;
+            var cell56 = row5.CreateCell(6);
+            cell56.SetCellValue(shipment.BILL_DATE);
+            cell56.CellStyle = headRightValueStyle;
+
+            var row6 = sheet.CreateRow(6);
+            var cell60 = row6.CreateCell(0);
+            cell60.SetCellValue("7400 Linder Ave.Skokie, IL 60077 USA");
+            cell60.CellStyle = headLeftValueStyle;
+            var cell65 = row6.CreateCell(5);
+            cell65.SetCellValue("CONTAINER NO.");
+            cell65.CellStyle = headRightFieldStyle;
+            var cell66 = row6.CreateCell(6);
+            cell66.SetCellValue(shipment.CONTAINER_NO);
+            cell66.CellStyle = headRightValueStyle;
+
+            var row7 = sheet.CreateRow(7);
+            var cell70 = row7.CreateCell(0);
+            cell70.SetCellValue("SHIP TO:");
+            cell70.CellStyle = headLeftFieldStyle;
+            var cell75 = row7.CreateCell(5);
+            cell75.SetCellValue("Seal NO.");
+            cell75.CellStyle = headRightFieldStyle;
+            var cell76 = row7.CreateCell(6);
+            cell76.SetCellValue(shipment.Seal_NO);
+            cell76.CellStyle = headRightValueStyle;
+
+            var row8 = sheet.CreateRow(8);
+            var cell80 = row8.CreateCell(0);
+            cell80.CellStyle = colorCellStyle;
+            var cell85 = row8.CreateCell(5);
+            cell85.SetCellValue("B/L NO.");
+            cell85.CellStyle = headRightFieldStyle;
+            var cell86 = row8.CreateCell(6);
+            cell86.SetCellValue(shipment.BL_NO);
+            cell86.CellStyle = headRightValueStyle;
+
+            var row9 = sheet.CreateRow(9);
+            var cell90 = row9.CreateCell(0);
+            cell90.SetCellValue("VC BRANDS LLC");
+            cell90.CellStyle = headLeftValueStyle;
+            var cell95 = row9.CreateCell(5);
+            cell95.SetCellValue("VESSEL");
+            cell95.CellStyle = headRightFieldStyle;
+            var cell96 = row9.CreateCell(6);
+            cell96.SetCellValue(shipment.VESSEL);
+            cell96.CellStyle = headRightValueStyle;
+
+            var row10 = sheet.CreateRow(10);
+            var cell100 = row10.CreateCell(0);
+            cell100.SetCellValue("LAS VEGAS NV DISTR.CENTER");
+            cell100.CellStyle = headLeftValueStyle;
+            var cell105 = row10.CreateCell(5);
+            cell105.SetCellValue("ETD");
+            cell105.CellStyle = headRightFieldStyle;
+            var cell106 = row10.CreateCell(6);
+            cell106.SetCellValue(shipment.ETD);
+            cell106.CellStyle = headRightValueStyle;
+
+            var row11 = sheet.CreateRow(11);
+            var cell110 = row11.CreateCell(0);
+            cell110.SetCellValue("3035 E LONE MOUNTAIN RD SUITE 1500");
+            cell110.CellStyle = headLeftValueStyle;
+            var cell115 = row11.CreateCell(5);
+            cell115.SetCellValue("ETA");
+            cell115.CellStyle = headRightFieldStyle;
+            var cell116 = row11.CreateCell(6);
+            cell116.SetCellValue(shipment.ETA);
+            cell116.CellStyle = headRightValueStyle;
+
+            var row12 = sheet.CreateRow(12);
+            var cell120 = row12.CreateCell(0);
+            cell120.SetCellValue("NORTH LAS VEGAS, NV 89081");
+            cell120.CellStyle = headLeftValueStyle;
+            var cell125 = row12.CreateCell(5);
+            cell125.SetCellValue("TERMS OF SALE.");
+            cell125.CellStyle = headRightFieldStyle;
+            var cell126 = row12.CreateCell(6);
+            cell126.SetCellValue(shipment.TERMS_OF_SALE);
+            cell126.CellStyle = headRightValueStyle;
+
+            var row13 = sheet.CreateRow(13);
+            var cell130 = row13.CreateCell(0);
+            cell130.CellStyle = colorCellStyle;
+            var cell135 = row13.CreateCell(5);
+            cell135.SetCellValue("SHIPMENT FROM");
+            cell135.CellStyle = headRightFieldStyle;
+            var cell136 = row13.CreateCell(6);
+            cell136.SetCellValue(shipment.SHIPMENT_FROM);
+            cell136.CellStyle = headRightValueStyle;
+
+            var row14 = sheet.CreateRow(14);
+            row14.Height = 20*50;
+            var cell140 = row14.CreateCell(0);
+            cell140.SetCellValue("VC BRANDS LLC  \n BURLINGTON NJ DISTR.CENTER  \n 6 CAMPUS DRIVE  \n BURLINGTON, NJ 08016");
+            cell140.CellStyle = headTextStyle;
+            var cell145 = row14.CreateCell(5);
+            cell145.SetCellValue("TO:");
+            cell145.CellStyle = headRightFieldStyle;
+            var cell146 = row14.CreateCell(6);
+            cell146.SetCellValue("VC BRANDS LLC \n LINDER AVE., SKOKIE, IL \n 60077, USA");
+            cell146.CellStyle = headTextStyle;
+
+            var row16 = sheet.CreateRow(16);
+            var cell160 = row16.CreateCell(0);
+            cell160.SetCellValue("Packing Material: Card Board Box. No Solid Wood Packing Material Used!!!");
+            cell160.CellStyle = headLeftFieldStyle;
             #endregion
 
+            #region 表身
+            string sql = string.Format(@"SELECT
+	            A.[PO_NO] AS 'PO#',
+	            A.[Name] AS 'ITEM NO.',
+	            B.[Qty] AS 'QTY(S)',
+	            A.[DESCRIPTION],
+				C.[NAME] MATERIAL,
+	            A.[Price] AS 'UNIT PRICE USD',
+			    B.[Qty]*A.Price AS 'AMOUNT USD'
+            FROM
+	            XY_TF_SIDR B
+            LEFT JOIN XY_POS A ON A.PO_NO=B.PO_NO AND A.ITEM=B.PO_ITEM
+						LEFT JOIN XY_MATERIAL C ON B.MATERIAL=C.ID
+            WHERE B.SIDR_NO='{0}'", shipment.SIDR_NO);
+
+            DataTable table = _dbHelper.QueryTable(sql);
+
+            #region 子表表头
+            var row17 = sheet.CreateRow(17);
+
+            for (int i = 0; i < table.Columns.Count; i++)
+            {
+                var cell = row17.CreateCell(i);
+                cell.SetCellValue(table.Columns[i].ColumnName);
+                cell.CellStyle = tableHeadCellStyle;
+            }
+
+            for (int i = 0; i < table.Rows.Count; i++)
+            {
+                var row18 = sheet.CreateRow(18+i);
+                for (int j = 0; j < table.Columns.Count; j++)
+                {
+                    var cell = row18.CreateCell(j);
+                    cell.SetCellValue(table.Rows[i][j].ToString());
+                    cell.CellStyle = tableCellStyle;
+                }
+            }
+
+            var row19 = sheet.CreateRow(table.Rows.Count + 18);
+            var cell190 = row19.CreateCell(3);
+            cell190.SetCellValue("Additional orgin charge");
+            cell190.CellStyle = headLeftValueStyle;
+            var cell195 = row19.CreateCell(5);
+            cell195.SetCellValue("$256");
+            cell195.CellStyle = headLeftValueStyle;
+            var cell196 = row19.CreateCell(6);
+            cell196.SetCellValue("$256");
+            cell196.CellStyle = headLeftValueStyle;
+
+            sheet.AddMergedRegion(new CellRangeAddress(table.Rows.Count+19, table.Rows.Count + 19, 0, 4));
+
+            var row20 = sheet.CreateRow(table.Rows.Count + 19);
+            var cell200 = row20.CreateCell(0);
+            cell200.SetCellValue("SAY TOTAL US DOLLARS: One Hundred Thirty Six Thousand Six Hundred Fifty and Six Centavo only.");
+            cell200.CellStyle = footLeftCellStyle;
+            var cell205 = row20.CreateCell(5);
+            cell205.SetCellValue("Subtotal");
+            cell205.CellStyle = headLeftValueStyle;
+            var cell206 = row20.CreateCell(6);
+            cell206.SetCellValue("");
+            cell206.CellStyle = headLeftValueStyle;
+
+            var row21 = sheet.CreateRow(table.Rows.Count + 20);
+            var cell210 = row21.CreateCell(0);
+            cell210.SetCellValue("PLEASE REMIT PAYMENT TO:");
+            cell210.CellStyle = headLeftFieldStyle;
+            var cell215 = row21.CreateCell(5);
+            cell215.SetCellValue("Tax");
+            cell215.CellStyle = headLeftValueStyle;
+            var cell216 = row21.CreateCell(6);
+            cell216.SetCellValue(shipment.TAX);
+            cell216.CellStyle = headLeftValueStyle;
+
+            var row22 = sheet.CreateRow(table.Rows.Count + 21);
+            var cell220 = row22.CreateCell(0);
+            cell220.SetCellValue("Benificiary name: TARGET LIGHTING MFTG CORP");
+            cell220.CellStyle = footLeftCellStyle;
+            var cell225 = row22.CreateCell(5);
+            cell225.SetCellValue("Freight");
+            cell225.CellStyle = headLeftValueStyle;
+            var cell226 = row22.CreateCell(6);
+            cell226.SetCellValue(shipment.FREIGHT);
+
+            var row23 = sheet.CreateRow(table.Rows.Count + 22);
+            var cell230 = row23.CreateCell(0);
+            cell230.SetCellValue("Benificiary Address: Building 02, 03,04, Lot 1, Berthaphil VIII Compound, along SCTEX Spur Road, Clark Freeport Zone,Philippines");
+            cell230.CellStyle= footLeftCellStyle;
+            var cell236 = row23.CreateCell(6);
+            cell236.SetCellValue("");
+            cell236.CellStyle=headLeftValueStyle;
+
+            var row24 = sheet.CreateRow(table.Rows.Count + 23);
+            var cell240 = row24.CreateCell(0);
+            cell240.SetCellValue("Bank Name: RIZAL COMMERCIAL BANKING CORPORATION (RCBC)");
+            cell240.CellStyle = footLeftCellStyle;
+            var cell246 = row24.CreateCell(6);
+            cell246.SetCellValue("PAY THIS");
+            cell246.CellStyle = headLeftValueStyle;
+
+            var row25 = sheet.CreateRow(table.Rows.Count + 24);
+            var cell250 = row25.CreateCell(0);
+            cell250.SetCellValue("Bank Address: CLARK II BUSINESS CENTER, BERTHAPHIL III, JOSE ABAD SANTOS AVE, CLARK FREEPORT ZONE, PAMPANGA 2023");
+            cell250.CellStyle = footLeftCellStyle;
+            var cell256 = row25.CreateCell(6);
+            cell256.SetCellValue("AMOUNT");
+            cell256.CellStyle = headLeftValueStyle;
+
+            var row26 = sheet.CreateRow(table.Rows.Count + 25);
+            var cell260 = row26.CreateCell(0);
+            cell260.SetCellValue("Account （USD）No#.0000009027891230");
+            cell260.CellStyle = footLeftCellStyle;
+
+            var row27 = sheet.CreateRow(table.Rows.Count + 26);
+            var cell270 = row27.CreateCell(0);
+            cell270.SetCellValue("SWIFT: RCBCPHMM");
+            cell270.CellStyle = footLeftCellStyle;
+
+            var row29 = sheet.CreateRow(table.Rows.Count + 29);
+            var cell290 = row29.CreateCell(3);
+            cell290.SetCellValue("THANK YOU FOR YOUR BUSINESS!");
+            cell290.CellStyle = headLeftFieldStyle;
+            #endregion
+
+            #endregion
+
+            #region 导出文件
             MemoryStream stream = new MemoryStream();
 
             workbook.Write(stream);
@@ -1044,6 +1434,7 @@ namespace OpenAuth.Mvc.Controllers
             Response.Headers.Add("Content-Disposition", new string[] { contentDisposition });
 
             Response.Body.WriteAsync(buf, 0, buf.Length);
+            #endregion
 
             return new EmptyResult();
         }

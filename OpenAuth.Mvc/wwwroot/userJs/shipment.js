@@ -99,6 +99,7 @@
                         }
                         , { field: 'Required_Shipping_Date', width: 70, title: 'R.S.Date' }
                         , { field: 'Delivery_Point', width: 100, title: 'Delivery Point' }
+                        , { field: 'MATERIAL', hide: true, title: 'MATERIAL' }
                         , {
                             field: 'Status', width: 60, title: 'Status', templet: function (row) {
                                 switch (parseInt(row.Status)) {
@@ -143,20 +144,21 @@
                 table.render({
                     elem: '#unsubmitList',
                     data: data,
-                    toolbar: '#toolbarDemo', //开启头部工具栏，并为其绑定左侧模板
+                    toolbar: '#toolbarDemo', 
                     cols: [[
                         { type: 'checkbox' }
                         , { field: 'ID', width: 70, title: 'ID', hide: true }
-                        , { field: 'SIDR_NO', width: 85, title: 'SI/DR No.' }
+                        , { field: 'SIDR_NO', width: 90, title: 'SI/DR No.' }
                         , { field: 'PO_NO', width: 70, title: 'PO NO' }
-                        , { field: 'Customer', width: 60, title: 'Customer' }
+                        , { field: 'Customer', width: 80, title: 'Customer' }
                         , { field: 'Name', width: 100, title: 'Name' }
                         , { field: 'Qty', width: 50, title: 'Qty' }
+                        , { field: 'MATERIAL', width: 100, title: 'MATERIAL' }
                         , { field: 'BILL_DATE', width: 80, title: 'BILL DATE' }
-                        , { field: 'REMARK', width: 80, title: 'REMARK' }
+                        , { field: 'REMARK', width: 150, title: 'REMARK' }
                     ]]
                 });
-                //头工具栏事件
+               
                 table.on('toolbar(unsubmitList)', function (obj) {
                     var checkStatus = table.checkStatus(obj.config.id);
                     switch (obj.event) {
@@ -232,11 +234,24 @@
                                         form.render();  //刷新select等
                                     })
                                 }
-                            },
+                            }, 
                             mounted() {
+                                $.ajax({
+                                    url: '/Order/GetMaterialList',
+                                    dataType: 'json',
+                                    type: 'get',
+                                    async: false,
+                                    success: function (data) {
+                                        var opt = '<option value="" selected=""></option>';
+                                        for (var i = 0; i < data.length; i++) {
+                                            opt += '<option value = "' + data[i].ID + '">' + data[i].Name + '</option>'
+                                        }
+                                        $("#MATERIAL").html(opt);
+                                        form.render('select');
+                                    }
+                                });
                                 data.Qty = parseFloat(data.Qty).toFixed(2);
                                 data.UNShipment_Qty = parseFloat(data.Qty) - parseFloat(data.Shipment_Qty).toFixed(2);
-
                                 form.verify({
                                     number: function (value) {
                                         if (isNaN(value)) {
@@ -261,6 +276,7 @@
                 },
                 end: productList
             });
+
             var url = "/Order/EditShipment";
             form.on('submit(formSubmit)',
             function (data) {
